@@ -116,24 +116,41 @@ services:
   - type: web
     name: image-color-palette-generator
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      pip install --upgrade pip
+      pip install wheel
+      pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.0
+      - key: PIP_EXTRA_INDEX_URL
+        value: https://pypi.org/simple
 ```
 
-2. Add Gunicorn to your `requirements.txt`:
+2. Create a `Procfile` in the root directory:
 
 ```
+web: gunicorn app:app
+```
+
+3. Set up your `requirements.txt` file:
+
+```
+# Core dependencies
 flask==2.0.1
 numpy==1.21.0
 Pillow==8.3.1
-scikit-learn==0.24.2
 gunicorn==20.1.0
+
+# Optional dependencies (will be used if available)
+scikit-learn>=1.0.2; platform_machine != "armv7l"
+
+# Build tools
+wheel==0.37.1
 ```
 
-3. Create a `.gitignore` file:
+4. Create a `.gitignore` file:
 
 ```
 venv/
@@ -145,9 +162,17 @@ static/uploads/*
 !static/uploads/.gitkeep
 ```
 
-4. Create an empty `.gitkeep` file in the `static/uploads` directory to ensure the directory is tracked by Git but its contents are ignored.
+5. Create an empty `.gitkeep` file in the `static/uploads` directory to ensure the directory is tracked by Git but its contents are ignored.
 
-### Step 2: Modify app.py for Production
+### Step 2: Handling Dependencies
+
+This application uses scikit-learn for color extraction, which can sometimes cause build issues on cloud platforms. To address this:
+
+1. We've created a fallback color extraction method in `color_extractor.py` that doesn't rely on scikit-learn
+2. The application will try to use scikit-learn first, but will fall back to the simpler method if needed
+3. The requirements.txt file is set up to make scikit-learn optional
+
+### Step 3: Modify app.py for Production
 
 Update your `app.py` to handle production environment:
 
@@ -161,7 +186,7 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port, debug=False)
 ```
 
-### Step 3: Push Your Code to GitHub
+### Step 4: Push Your Code to GitHub
 
 1. Initialize a Git repository (if not already done):
    ```
