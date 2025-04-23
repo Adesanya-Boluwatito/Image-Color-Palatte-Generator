@@ -1,7 +1,7 @@
 import os
 from flask import Flask, render_template, request, jsonify
-# Import our color extractor module
-from color_extractor import extract_colors
+# Import our simple color extractor module
+from simple_color_extractor import extract_colors
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'

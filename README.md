@@ -16,8 +16,7 @@ A web application that extracts and displays the top 10 most common colors from 
 
 The application uses:
 - **Flask** as the web framework
-- **NumPy** and **PIL** for image processing
-- **scikit-learn** for color extraction using KMeans clustering
+- **PIL (Pillow)** for image processing and color extraction
 - Modern HTML, CSS, and JavaScript for the frontend
 
 ## Project Structure
@@ -43,9 +42,9 @@ image-color-palette-generator/
 The color extraction process works as follows:
 
 1. The uploaded image is resized to 150x150 pixels for faster processing
-2. The image is converted to a NumPy array
-3. The array is reshaped to a list of pixels (RGB values)
-4. KMeans clustering is applied to find the 10 most dominant colors
+2. The image is converted to RGB format if needed
+3. PIL's quantize method is used to reduce the number of colors in the image
+4. The most common colors are counted and extracted
 5. The RGB values are converted to HEX format
 6. The colors are sent back to the frontend as JSON
 
@@ -116,16 +115,11 @@ services:
   - type: web
     name: image-color-palette-generator
     env: python
-    buildCommand: |
-      pip install --upgrade pip
-      pip install wheel
-      pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.9.0
-      - key: PIP_EXTRA_INDEX_URL
-        value: https://pypi.org/simple
 ```
 
 2. Create a `Procfile` in the root directory:
@@ -139,15 +133,8 @@ web: gunicorn app:app
 ```
 # Core dependencies
 flask==2.0.1
-numpy==1.21.0
 Pillow==8.3.1
 gunicorn==20.1.0
-
-# Optional dependencies (will be used if available)
-scikit-learn>=1.0.2; platform_machine != "armv7l"
-
-# Build tools
-wheel==0.37.1
 ```
 
 4. Create a `.gitignore` file:
@@ -166,11 +153,7 @@ static/uploads/*
 
 ### Step 2: Handling Dependencies
 
-This application uses scikit-learn for color extraction, which can sometimes cause build issues on cloud platforms. To address this:
-
-1. We've created a fallback color extraction method in `color_extractor.py` that doesn't rely on scikit-learn
-2. The application will try to use scikit-learn first, but will fall back to the simpler method if needed
-3. The requirements.txt file is set up to make scikit-learn optional
+This application uses a simple color extraction method that only relies on PIL (Pillow), which makes it easy to deploy to cloud platforms like Render. The color extraction is implemented in `simple_color_extractor.py` and uses PIL's quantize method to find the most common colors in an image.
 
 ### Step 3: Modify app.py for Production
 
