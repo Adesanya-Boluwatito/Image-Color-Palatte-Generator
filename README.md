@@ -135,6 +135,10 @@ web: gunicorn app:app
 flask==2.0.1
 Pillow==8.3.1
 gunicorn==20.1.0
+werkzeug==2.0.1
+jinja2==3.0.1
+itsdangerous==2.0.1
+click==8.0.1
 ```
 
 4. Create a `.gitignore` file:
@@ -226,6 +230,20 @@ You can customize the application by:
 1. **Image upload fails**: Ensure the upload directory has proper permissions
 2. **Color extraction is slow**: Try reducing the image resize dimensions
 3. **Deployment issues**: Check Render logs for specific error messages
+
+### Deployment Troubleshooting
+
+If you encounter issues deploying to Render, here are some common problems and solutions:
+
+1. **Dependency conflicts**: Make sure to specify exact versions of all dependencies in requirements.txt, including Flask's dependencies (Werkzeug, Jinja2, etc.)
+
+2. **Build failures with NumPy or scikit-learn**: These packages require compilation and can cause issues on cloud platforms. Our application uses a simpler approach with just PIL to avoid these issues.
+
+3. **"ImportError: cannot import name 'url_quote'"**: This is caused by a version mismatch between Flask and Werkzeug. Make sure to specify werkzeug==2.0.1 in your requirements.txt.
+
+4. **Static files not being served**: Make sure your static directories (uploads, css, js) exist and have the correct permissions.
+
+5. **Application crashes after deployment**: Check the Render logs for specific error messages. Common issues include missing environment variables or incorrect file paths.
 
 ## Future Enhancements
 
